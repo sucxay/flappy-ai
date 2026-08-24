@@ -114,13 +114,13 @@ def draw_window(birds, pipes, generation):
     for pipe in pipes:
         pipe.draw()
 
-    for bird in birds:
-        if bird.alive:
-            bird.draw()
+    for b in birds:
+        if b.alive:
+            b.draw()
 
     alive = sum(
-        1 for bird in birds
-        if bird.alive
+        1 for b in birds
+        if b.alive
     )
 
     text = FONT.render(
@@ -186,9 +186,9 @@ def eval_genomes(genomes, config):
         # AI decisions
         # ------------------------------------------
 
-        for i, bird in enumerate(birds):
+        for i, b in enumerate(birds):
 
-            if not bird.alive:
+            if not b.alive:
                 continue
 
             genome = genome_list[i]
@@ -198,9 +198,9 @@ def eval_genomes(genomes, config):
             gap_bottom = pipe.gap_y + PIPE_GAP / 2
 
             inputs = (
-                bird.y / HEIGHT,
-                bird.velocity / 10,
-                (pipe.x - bird.x) / WIDTH,
+                b.y / HEIGHT,
+                b.velocity / 10,
+                (pipe.x - b.x) / WIDTH,
                 gap_top / HEIGHT,
                 gap_bottom / HEIGHT
             )
@@ -208,9 +208,9 @@ def eval_genomes(genomes, config):
             output = net.activate(inputs)
 
             if output[0] > 0.5:
-                bird.jump()
+                b.jump()
 
-            bird.move()
+            b.move()
 
             # Survival reward
             genome.fitness += 0.1
@@ -234,32 +234,32 @@ def eval_genomes(genomes, config):
         # Collision / scoring
         # ------------------------------------------
 
-        for i, bird in enumerate(birds):
+        for i, b in enumerate(birds):
 
-            if not bird.alive:
+            if not b.alive:
                 continue
 
             genome = genome_list[i]
 
             # Ground / ceiling
             if (
-                bird.y - BIRD_SIZE <= 0
-                or bird.y + BIRD_SIZE >= HEIGHT
+                b.y - BIRD_SIZE <= 0
+                or b.y + BIRD_SIZE >= HEIGHT
             ):
-                bird.alive = False
+                b.alive = False
                 genome.fitness -= 5
                 continue
 
             # Pipe collision
             for p in pipes:
 
-                if p.collides(bird):
+                if p.collides(b):
 
-                    bird.alive = False
+                    b.alive = False
                     genome.fitness -= 5
                     break
 
-            if not bird.alive:
+            if not b.alive:
                 continue
 
             # Passed pipe
@@ -267,16 +267,16 @@ def eval_genomes(genomes, config):
 
                 if (
                     not p.passed
-                    and p.x + PIPE_WIDTH < bird.x
+                    and p.x + PIPE_WIDTH < b.x
                 ):
 
                     p.passed = True
 
-                    bird.score += 1
+                    b.score += 1
                     genome.fitness += 10
 
         # Remove dead birds
-        if not any(bird.alive for bird in birds):
+        if not any(b.alive for b in birds):
             running = False
 
         draw_window(
